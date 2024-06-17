@@ -1,233 +1,182 @@
-# JSONManager Class
+# JsonManager PHP Class
 
-The `JSONManager` class provides a set of methods to manage JSON files, allowing you to create, update, find, delete, count, sort, paginate, merge, backup, and restore JSON data.
+**JsonManager** is a PHP class designed to facilitate easy management of JSON data stored in files. It provides methods for CRUD operations, sorting, pagination, merging, backup, and restore functionalities.
+
+## Features
+
+- Save/Update Data: Save or update JSON data in a file. Supports updating existing data based on specific criteria.
+- Retrieve Data: Retrieve all data from the JSON file.
+- Find Data: Find data in the JSON file based on a specific key-value pair.
+- Delete Data: Delete data from the JSON file based on a specific key-value pair.
+- Count Objects: Count the number of objects in the JSON file.
+- Sort Data: Sort data in the JSON file by a specific key.
+- Paginate Data: Paginate the data in the JSON file.
+- Merge Data: Merge data from another JSON file or an array into the current JSON data.
+- Backup and Restore: Create backups of the JSON file and restore from backups.
+
+## Requirements
+
+- PHP 5.6 or higher (JSON extension enabled)
 
 ## Installation
 
-Include the `JSONManager` class in your project:
-
-```php
-require_once 'path/to/JSONManager.php';
-```
+No installation necessary. Simply include the JsonManager class in your PHP project.
 
 ## Usage
 
-Below are examples of how to use the various methods provided by the JSONManager class.
-
-### Create a New Object
-
-Creates a new object in the JSON file.
+### Example Usage:
 
 ```php
-$path = 'data.json';
-$newObject = [
-    'id' => 1,
-    'name' => 'John Doe',
-    'age' => 30,
-    'city' => 'New York'
-];
+<?php
+// Include the JsonManager class
+require_once 'JsonManager.php';
+
+// Define your JSON file path
+$jsonFilePath = 'data.json';
 
 try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->save($newObject, false, 'users');
+    // Example: Save data to JSON file
+    $dataToSave = [
+        'id' => 1,
+        'name' => 'John Doe',
+        'email' => 'john.doe@example.com'
+    ];
+    JsonManager::save($jsonFilePath, $dataToSave);
+
+    // Example: Retrieve all data
+    $allData = JsonManager::getAll($jsonFilePath);
+    var_dump($allData);
+
+    // Example: Find data by key
+    $foundData = JsonManager::findByKey($jsonFilePath, 'id', 1);
+    var_dump($foundData);
+
+    // Example: Delete data by key
+    JsonManager::deleteByKey($jsonFilePath, 'id', 1);
+
+    // Example: Count objects
+    $count = JsonManager::count($jsonFilePath);
+    echo "Number of objects: $count\n";
+
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
+    echo 'Error: ' . $e->getMessage();
 }
+?>
 ```
 
-### Update an Existing Object
+## Methods
 
-Updates an existing object in the JSON file based on a specified key and value.
+`JsonManager::save($path, $object, $isUpdate = false, $location = null, $keyToUpdate = null, $valueToUpdate = null)`
 
-```php
-$path = 'data.json';
-$updatedObject = [
-    'id' => 1,
-    'name' => 'John Doe',
-    'age' => 31,
-    'city' => 'Los Angeles'
-];
+Save data to the JSON file.
 
-try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->save($updatedObject, true, 'users', 'id', 1);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+- **$path:** Path to the JSON file.
+- **$object:** Data object to save/update.
+- **$isUpdate:** Flag indicating if data should be updated (default: false).
+- **$location:** Specific location within the JSON structure to save/update (optional).
+- **$keyToUpdate:** Key to search for when updating data (optional).
+- **$valueToUpdate:** Value corresponding to $keyToUpdate to identify data to update (optional).
 
-```
+Throws Exception on error.
 
-### Find an Object by Key
+`JsonManager::getAll($path)`
+Retrieve all data from the JSON file.
 
-Finds an object in the JSON file by a specified key and value.
+- **$path:** Path to the JSON file.
 
-```php
+Returns an array of all data objects.
 
-$path = 'data.json';
+Throws Exception on error.
 
-try {
-    $jsonManager = new JSONManager($path);
-    $result = $jsonManager->findByKey('id', 1, 'users');
-    print_r($result);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+`JsonManager::findByKey($path, $key, $value)`
 
-```
+Find data in the JSON file by a specific key-value pair.
 
-### Delete an Object by Key
+- **$path:** Path to the JSON file.
+- **$key:** Key to search for.
+- **$value:** Value corresponding to `$key` to search for.
 
-Deletes an object from the JSON file by a specified key and value.
+Returns an array of matching data objects or null if not found.
 
-```php
+Throws Exception on error.
 
-$path = 'data.json';
+`JsonManager::deleteByKey($path, $key, $value)`
 
-try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->deleteByKey('id', 1, 'users');
-    $jsonManager->save();
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+Delete data from the JSON file based on a specific key-value pair.
 
-```
+- **$path:** Path to the JSON file.
+- **$key:** Key to search for.
+- **$value:** Value corresponding to `$key` to identify data to delete.
 
-### Count Objects
+Throws Exception on error.
 
-Counts the number of objects in a specified location in the JSON file.
+`JsonManager::count($path)`
 
-```php
+Count the number of objects in the JSON file.
 
-$path = 'data.json';
+- **$path:** Path to the JSON file.
+Returns the number of objects.
 
-try {
-    $jsonManager = new JSONManager($path);
-    $count = $jsonManager->count('users');
-    echo "Total users: " . $count;
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+Throws Exception on error.
 
-```
+`JsonManager::sortByKey($path, $key)`
 
-### Sort Objects by Key
+Sort data in the JSON file by a specific key.
 
-Sorts objects in a specified location in the JSON file by a specified key.
+- **$path:** Path to the JSON file.
+- **$key:** Key to sort by.
+Returns a sorted array of data objects.
 
-```php
+Throws Exception on error.
 
-$path = 'data.json';
+`JsonManager::paginate($path, $perPage, $page)`
 
-try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->sortByKey('age', 'users');
-    $jsonManager->save();
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+Paginate the data in the JSON file.
 
-```
+- **$path:** Path to the JSON file.
+- **$perPage:** Number of items per page.
+- **$page:** Page number to retrieve.
 
-### Paginate Objects
+Returns an array of data objects for the specified page.
 
-Paginates objects in a specified location in the JSON file.
+Throws Exception on error or invalid pagination parameters.
 
-```php 
+`JsonManager::mergeFromFile($path, $otherFilePath)`
 
-$path = 'data.json';
+Merge data from another JSON file into the current JSON file.
 
-try {
-    $jsonManager = new JSONManager($path);
-    $page = 1;
-    $perPage = 10;
-    $paginatedData = $jsonManager->paginate($page, $perPage, 'users');
-    print_r($paginatedData);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+- **$path:** Path to the current JSON file.
+- **$otherFilePath:** Path to the other JSON file to merge from.
 
-```
+Throws Exception on error.
 
-### Merge Data from Another File
+`JsonManager::mergeFromArray($path, $dataArray)`
 
-Merges data from another JSON file into the current JSON file.
+Merge data from an array into the current JSON data.
 
-```php
+- **$path:** Path to the JSON file.
+- **$dataArray:** Array of data to merge.
 
-$path = 'data.json';
-$otherFilePath = 'other_data.json';
+Throws Exception on error.
 
-try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->mergeFromFile($otherFilePath);
-    $jsonManager->save();
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+`JsonManager::backup($path, $backupPath)`
 
-```
+Backup the current JSON file to a specified location.
 
-### Merge Data from an Array
+- **$path:** Path to the JSON file.
+- **$backupPath:** Path to save the backup file.
 
-Merges data from an array into the current JSON file.
+Throws Exception on error.
 
-```php
+`JsonManager::restore($path, $backupPath)`
 
-$path = 'data.json';
-$dataArray = [
-    [
-        'id' => 2,
-        'name' => 'Jane Smith',
-        'age' => 28,
-        'city' => 'Chicago'
-    ]
-];
+Restore the JSON file from a specified backup location.
 
-try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->mergeFromArray($dataArray);
-    $jsonManager->save();
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+- **$path:** Path to the JSON file.
+- **$backupPath:** Path to the backup file.
 
-```
+Throws Exception on error.
 
-### Backup JSON File
+## License
 
-Creates a backup of the current JSON file.
-
-```php
-
-$path = 'data.json';
-$backupPath = 'backup_data.json';
-
-try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->backup($backupPath);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
-
-```
-
-### Restore JSON File from Backup
-
-Restores the JSON file from a backup.
-
-```php
-
-$path = 'data.json';
-$backupPath = 'backup_data.json';
-
-try {
-    $jsonManager = new JSONManager($path);
-    $jsonManager->restore($backupPath);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
-
-```
-
-In each example, the try block encapsulates operations that may throw exceptions, while the catch block handles any caught exceptions by displaying an error message. Adjust the error handling in catch blocks based on your application's requirements, such as logging errors or displaying them to users.
+This project is licensed under the MIT License - see the LICENSE file for details.
