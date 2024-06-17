@@ -27,8 +27,12 @@ $newObject = [
     'city' => 'New York'
 ];
 
-$jsonManager = new JSONManager($path, $newObject, false, 'users');
-$jsonManager->save();
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->save($newObject, false, 'users');
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 ```
 
 ### Update an Existing Object
@@ -44,8 +48,12 @@ $updatedObject = [
     'city' => 'Los Angeles'
 ];
 
-$jsonManager = new JSONManager($path, $updatedObject, true, 'users', 'id', 1);
-$jsonManager->save();
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->save($updatedObject, true, 'users', 'id', 1);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -56,10 +64,14 @@ Finds an object in the JSON file by a specified key and value.
 ```php
 
 $path = 'data.json';
-$jsonManager = new JSONManager($path);
 
-$result = $jsonManager->findByKey('id', 1, 'users');
-print_r($result);
+try {
+    $jsonManager = new JSONManager($path);
+    $result = $jsonManager->findByKey('id', 1, 'users');
+    print_r($result);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -70,10 +82,14 @@ Deletes an object from the JSON file by a specified key and value.
 ```php
 
 $path = 'data.json';
-$jsonManager = new JSONManager($path);
 
-$jsonManager->deleteByKey('id', 1, 'users');
-$jsonManager->save();
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->deleteByKey('id', 1, 'users');
+    $jsonManager->save();
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -84,10 +100,14 @@ Counts the number of objects in a specified location in the JSON file.
 ```php
 
 $path = 'data.json';
-$jsonManager = new JSONManager($path);
 
-$count = $jsonManager->count('users');
-echo "Total users: " . $count;
+try {
+    $jsonManager = new JSONManager($path);
+    $count = $jsonManager->count('users');
+    echo "Total users: " . $count;
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -98,10 +118,14 @@ Sorts objects in a specified location in the JSON file by a specified key.
 ```php
 
 $path = 'data.json';
-$jsonManager = new JSONManager($path);
 
-$jsonManager->sortByKey('age', 'users');
-$jsonManager->save();
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->sortByKey('age', 'users');
+    $jsonManager->save();
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -112,12 +136,16 @@ Paginates objects in a specified location in the JSON file.
 ```php 
 
 $path = 'data.json';
-$jsonManager = new JSONManager($path);
 
-$page = 1;
-$perPage = 10;
-$paginatedData = $jsonManager->paginate($page, $perPage, 'users');
-print_r($paginatedData);
+try {
+    $jsonManager = new JSONManager($path);
+    $page = 1;
+    $perPage = 10;
+    $paginatedData = $jsonManager->paginate($page, $perPage, 'users');
+    print_r($paginatedData);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -129,10 +157,14 @@ Merges data from another JSON file into the current JSON file.
 
 $path = 'data.json';
 $otherFilePath = 'other_data.json';
-$jsonManager = new JSONManager($path);
 
-$jsonManager->mergeFromFile($otherFilePath);
-$jsonManager->save();
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->mergeFromFile($otherFilePath);
+    $jsonManager->save();
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -152,9 +184,13 @@ $dataArray = [
     ]
 ];
 
-$jsonManager = new JSONManager($path);
-$jsonManager->mergeFromArray($dataArray);
-$jsonManager->save();
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->mergeFromArray($dataArray);
+    $jsonManager->save();
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -166,9 +202,13 @@ Creates a backup of the current JSON file.
 
 $path = 'data.json';
 $backupPath = 'backup_data.json';
-$jsonManager = new JSONManager($path);
 
-$jsonManager->backup($backupPath);
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->backup($backupPath);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 ```
 
@@ -180,171 +220,14 @@ Restores the JSON file from a backup.
 
 $path = 'data.json';
 $backupPath = 'backup_data.json';
-$jsonManager = new JSONManager($path);
 
-$jsonManager->restore($backupPath);
-
-```
-
-### JSONManager Class
-
-```php
-
-class JSONManager
-{
-    public $isThere;
-    public $path;
-    public $object;
-    public $location;
-    public $fileContent;
-    public $keyToUpdate;
-    public $valueToUpdate;
-
-    public function __construct($path, $object = [], $isUpdate = false, $location = null, $keyToUpdate = null, $valueToUpdate = null)
-    {
-        $this->path = $path;
-        $this->object = $object;
-        $this->isThere = $isUpdate;
-        $this->location = $location;
-        $this->keyToUpdate = $keyToUpdate;
-        $this->valueToUpdate = $valueToUpdate;
-
-        $this->fileContent = file_exists($path) ? file_get_contents($path) : '{}';
-    }
-
-    public function save()
-    {
-        $data = json_decode($this->fileContent, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Error decoding JSON: " . json_last_error_msg());
-        }
-
-        if ($this->isThere && $this->location !== null) {
-            if (isset($data[$this->location])) {
-                $found = false;
-                foreach ($data[$this->location] as &$existingObject) {
-                    if (isset($existingObject[$this->keyToUpdate]) && $existingObject[$this->keyToUpdate] == $this->valueToUpdate) {
-                        $existingObject = array_merge($existingObject, $this->object);
-                        $found = true;
-                        break;
-                    }
-                }
-                if (!$found) {
-                    $data[$this->location][] = $this->object;
-                }
-            } else {
-                $data[$this->location] = [$this->object];
-            }
-        } else {
-            $data[] = $this->object;
-        }
-
-        $newJson = json_encode($data, JSON_PRETTY_PRINT);
-        file_put_contents($this->path, $newJson);
-    }
-
-    public function findByKey($key, $value, $location = null)
-    {
-        $data = json_decode($this->fileContent, true);
-        if ($location !== null && isset($data[$location])) {
-            foreach ($data[$location] as $obj) {
-                if (isset($obj[$key]) && $obj[$key] == $value) {
-                    return $obj;
-                }
-            }
-        }
-        return null;
-    }
-
-    public function deleteByKey($key, $value, $location = null)
-    {
-        $data = json_decode($this->fileContent, true);
-        if ($location !== null && isset($data[$location])) {
-            foreach ($data[$location] as $index => $obj) {
-                if (isset($obj[$key]) && $obj[$key] == $value) {
-                    unset($data[$location][$index]);
-                    $data[$location] = array_values($data[$location]);
-                    break;
-                }
-            }
-        }
-        $this->fileContent = json_encode($data, JSON_PRETTY_PRINT);
-    }
-
-    public function count($location = null)
-    {
-        $data = json_decode($this->fileContent, true);
-        if ($location !== null && isset($data[$location])) {
-            return count($data[$location]);
-        }
-        return 0;
-    }
-
-    public function sortByKey($key, $location = null)
-    {
-        $data = json_decode($this->fileContent, true);
-        if ($location !== null && isset($data[$location])) {
-            usort($data[$location], function ($a, $b) use ($key) {
-                return $a[$key] <=> $b[$key];
-            });
-        }
-        $this->fileContent = json_encode($data, JSON_PRETTY_PRINT);
-    }
-
-    public function paginate($page, $perPage, $location = null)
-    {
-        $data = json_decode($this->fileContent, true);
-        if ($location !== null && isset($data[$location])) {
-            $total = count($data[$location]);
-            $start = ($page - 1) * $perPage;
-            return array_slice($data[$location], $start, $perPage);
-        }
-        return [];
-    }
-
-    public function mergeFromFile($otherFilePath)
-    {
-        if (!file_exists($otherFilePath)) {
-            throw new Exception("File not found: {$otherFilePath}");
-        }
-        $otherData = file_get_contents($otherFilePath);
-        $otherData = json_decode($otherData, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Error decoding JSON from other file: " . json_last_error_msg());
-        }
-
-        $mergedData = array_merge(json_decode($this->fileContent, true), $otherData);
-        $newJson = json_encode($mergedData, JSON_PRETTY_PRINT);
-        file_put_contents($this->path, $newJson);
-    }
-
-    public function mergeFromArray(array $dataArray)
-    {
-        $currentData = json_decode($this->fileContent, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Error decoding JSON: " . json_last_error_msg());
-        }
-
-        $mergedData = array_merge($currentData, $dataArray);
-        $newJson = json_encode($mergedData, JSON_PRETTY_PRINT);
-        file_put_contents($this->path, $newJson);
-    }
-
-    public function backup($backupPath)
-    {
-        if (!copy($this->path, $backupPath)) {
-            throw new Exception("Error creating backup of the JSON file.");
-        }
-    }
-
-    public function restore($backupPath)
-    {
-        if (!copy($backupPath, $this->path)) {
-            throw new Exception("Error restoring the JSON file from backup.");
-        }
-        $this->fileContent = file_get_contents($this->path);
-    }
+try {
+    $jsonManager = new JSONManager($path);
+    $jsonManager->restore($backupPath);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
 }
 
 ```
+
+In each example, the try block encapsulates operations that may throw exceptions, while the catch block handles any caught exceptions by displaying an error message. Adjust the error handling in catch blocks based on your application's requirements, such as logging errors or displaying them to users.
