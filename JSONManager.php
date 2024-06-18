@@ -29,7 +29,7 @@ class JsonManager
 
         // Check for decoding errors
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Error decoding JSON: " . json_last_error_msg());
+            throw new Exception("Error decoding JSON: " . json_last_error_msg() . "\n" . var_dump);
         }
 
         // Ensure $data is an array
@@ -106,40 +106,37 @@ class JsonManager
      */
     public static function findByKey($dataOrPath, $key, $value)
     {
-        if (is_string($dataOrPath)) {
-            // Decode the JSON string to an associative array
-            $data = json_decode($dataOrPath, true);
-
-            // Check for decoding errors
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception("Error decoding JSON: " . json_last_error_msg());
-            }
-        } elseif (is_file($dataOrPath)) {
+        $data = [];
+    
+        if (is_file($dataOrPath)) {
             // Read the content of the JSON file
             $fileContent = file_exists($dataOrPath) ? file_get_contents($dataOrPath) : '{}'; // Default to an empty JSON object if the file doesn't exist
-
+        
             // Decode the JSON file content to an associative array
             $data = json_decode($fileContent, true);
-
-            // Check for decoding errors
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception("Error decoding JSON: " . json_last_error_msg());
-            }
         } else {
-            throw new Exception("Invalid data source provided. Must be JSON string or valid file path.");
+            // Decode the JSON string to an associative array
+            $data = json_decode($dataOrPath, true);
         }
-
+    
+        // Check for decoding errors
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("Error decoding JSON: " . json_last_error_msg());
+        }
+    
         $results = [];
-
+    
         // Function to recursively search for matching objects
         $search = function($data) use (&$results, $key, $value, &$search) {
             if (is_array($data)) {
                 foreach ($data as $item) {
+                    if (is_array($item) || is_object($item)) {
+                        // Recursively search nested arrays or objects
+                        $search($item);
+                    }
                     if (isset($item[$key]) && $item[$key] == $value) {
                         $results[] = $item;
                     }
-                    // Recursively search nested arrays or objects
-                    $search($item);
                 }
             } elseif (is_object($data)) {
                 // Convert object to array
@@ -151,12 +148,13 @@ class JsonManager
                 $search($item);
             }
         };
-
+    
         // Start searching from the top level of $data
         $search($data);
-
+    
         return $results;
     }
+
 
     /**
      * Delete data from the JSON file based on a specific key-value pair.
