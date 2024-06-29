@@ -19,10 +19,10 @@ class JsonManager
      * 
      * @throws Exception If there is an error decoding JSON or saving JSON content
      */
-    public static function save($path, $object, $isUpdate = false, $location = null, $keyToUpdate = null, $valueToUpdate = null)
+    public static function save($path, $object, $isUpdate = false, $keyToUpdate = null, $valueToUpdate = null)
     {
         // Read the content of the JSON file
-        $fileContent = file_exists($path) ? file_get_contents($path) : '{}'; // Default to an empty JSON object if the file doesn't exist
+        $fileContent = file_exists($path) ? file_get_contents($path) : '[]'; // Default to an empty JSON array if the file doesn't exist
 
         // Decode the JSON file content to an associative array
         $data = json_decode($fileContent, true);
@@ -38,24 +38,19 @@ class JsonManager
         }
 
         // Handle update if specified
-        if ($isUpdate && $location !== null && $keyToUpdate !== null && $valueToUpdate !== null) {
-            if (isset($data[$location]) && is_array($data[$location])) {
-                $found = false;
-                // Iterate through existing objects to find and update
-                foreach ($data[$location] as &$existingObject) {
-                    if (isset($existingObject[$keyToUpdate]) && $existingObject[$keyToUpdate] == $valueToUpdate) {
-                        $existingObject = array_merge($existingObject, $object); // Update existing object
-                        $found = true;
-                        break;
-                    }
+        if ($isUpdate && $keyToUpdate !== null && $valueToUpdate !== null) {
+            $found = false;
+            // Iterate through existing objects to find and update
+            foreach ($data as &$existingObject) {
+                if (isset($existingObject[$keyToUpdate]) && $existingObject[$keyToUpdate] == $valueToUpdate) {
+                    $existingObject = array_merge($existingObject, $object); // Update existing object
+                    $found = true;
+                    break;
                 }
-                if (!$found) {
-                    // If object not found, add it to the array
-                    $data[$location][] = $object;
-                }
-            } else {
-                // Initialize the specified location with the new object
-                $data[$location] = [$object];
+            }
+            if (!$found) {
+                // If object not found, add it to the array
+                $data[] = $object;
             }
         } else {
             // Add new object to data array
